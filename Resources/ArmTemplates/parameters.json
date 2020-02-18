@@ -1,0 +1,63 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appGatewayName": {
+            "value": "__aksAppGatewayName__"
+        },
+        "appGatewaySubnetRef": {
+            "value": "__aksAppGatewaySubnetResourceId__"
+        },
+        "capacity": {
+            "value": __aksAppGatewayCapacity__
+        },
+        "appGatewayPools": {
+            "value": [ {
+                "name": "defaultBackend",
+                "fqdn": "__aksBackend__"
+            } ]
+        },
+        "appGatewayPoolHttpSettings": {
+            "value": [ {
+                "name": "httpSettings",
+                "port": 7474,
+                "protocol": "Http",
+                "hostnameFromBackendAddress": true
+              }, {
+                "name": "httpsSettings",
+                "port": 7473,
+                "protocol": "Https",
+                "hostnameFromBackendAddress": true
+              }, {
+                "name": "boltSettings",
+                "port": 7687,
+                "protocol": "Https",
+                "hostnameFromBackendAddress": true
+            } ]
+        },
+        "privateIPAddress": {
+            "value": "__privateIPAddress__"
+        },
+        "publicDnsLabel": {
+            "value": "__publicDnsLabel__"
+        },
+        "keyVaultName": {
+            "value": "__keyVaultName__"
+        },
+        "keyVaultSecretName": {
+            "value": "__keyVaultSecretName__"
+        },
+        "EnableMetricAlerts": {
+            "value": __EnableMetricAlerts__
+        },
+        "logStorageAccountId": {
+            "value": "__logStorageAccountId__"
+        },
+        "logWorkspaceId": {
+            "value": "__logWorkspaceId__"
+        },
+        "logRetention": {
+            "value": __logRetention__
+        }
+    }
+}

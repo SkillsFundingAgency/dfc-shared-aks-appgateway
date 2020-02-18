@@ -1,0 +1,39 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appGatewayName": {
+            "value": "dfc-foo-bar-ag"
+        },
+        "appGatewaySubnetRef": {
+            "value": "/subscriptions/962cae10-2950-412a-93e3-d8ae92b17896/resourceGroups/dfc-foo-bar-rg/providers/Microsoft.Network/virtualNetworks/dfc-foo-bar-vnet/subnets/appgateway"
+        },
+        "appGatewayPools": {
+            "value": [ {
+                "name": "mypool",
+                "fqdn": "foo.example.net"
+            } ]
+        },
+        "appGatewayPoolHttpSettings": {
+            "value": [ {
+                "name": "myHttpSetting",
+                "port": 80,
+                "protocol": "Http"
+            } ]
+        },
+        "appGatewayRouting": {
+            "value": [ {
+                "name": "myrule",
+                "backendPool": "mypool",
+                "backendHttp": "myHttpSetting",
+                "paths": [ "/dummy/*" ]
+            } ]
+        },
+        "publicDnsLabel": {
+            "value": "foobarag"
+        },
+        "EnableMetricAlerts": {
+            "value": false
+        }
+    }
+}
