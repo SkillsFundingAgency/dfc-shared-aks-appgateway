@@ -1,0 +1,44 @@
+variables:
+  BuildPlatform: 'any cpu'
+  BuildConfiguration: 'release'
+  group: dfc-findacourse-build
+
+resources:
+  repositories:
+  - repository: self
+  - repository: dfc-devops
+    type: github
+    name: SkillsFundingAgency/dfc-devops
+    endpoint: 'GitHub (ESFA)'
+    ref: refs/tags/v1.8.5
+
+trigger:
+  branches:
+    include:
+    - master
+
+pr:
+  branches:
+    include:
+    - master
+
+pool:
+  name: NCS - CI and CD
+  demands:
+    - PowerShell
+
+jobs:
+  #Build and test Azure resources
+  - job: ARMResources
+    steps:
+    # test ARM template
+    - template: AzureDevOpsTemplates/Build/StepTemplates/dfc-arm-build.yml@dfc-devops
+      parameters:
+        ArmTemplateRoot: '$(System.DefaultWorkingDirectory)\Resources\ArmTemplates'
+
+    # Copy ARM template to outputted artifact
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifact
+      inputs:
+        pathtoPublish: $(Build.ArtifactStagingDirectory)
+        artifactName: Dfc.Aks.AppGateway

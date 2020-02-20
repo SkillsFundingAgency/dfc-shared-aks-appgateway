@@ -1,0 +1,360 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appGatewayName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of new Azure VNet where you can deploy Azure Sql Managed Instances and the resources that use them"
+            }
+        },
+        "appGatewaySubnetRef": {
+            "type": "string",
+            "metadata": {
+                "description": "First 2 octects of VNet Private IP address range (VNet prefix)"
+            }
+        },
+        "appGatewayPools": {
+            "type": "array",
+            "metadata": {
+                "description": "Array of objects describing the backend pools for the app gateway to use"
+            }
+        },
+        "appGatewayPoolHttpSettings": {
+            "type": "array",
+            "metadata": {
+                "description": "Http settings for access backend pools"
+            }
+        },
+        "appGatewayRouting": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Array of objects describing the rules for routing traffic"
+            }
+        },
+        "appGatewayRewrites": {
+            "type": "array",
+            "metadata": {
+                "description": "Array of objects describing the rewrite rules"
+            }
+        },
+        "capacity": {
+            "type": "int",
+            "minValue": 2,
+            "maxValue": 75,
+            "defaultValue": 2,
+            "metadata": {
+                "description": "Number of instances of the app gateway running"
+            }
+        },
+        "customProbes": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Optional array of probes to create"
+            }
+        },
+        "customErrorPages": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Optionally set custom error pages"
+            }
+        },
+        "publicDnsLabel": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Set DNS label on public IP address for application gateway"
+            }
+        },
+        "privateIPAddress": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Private IP address for application gateway"
+            }
+        },
+        "keyVaultName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The name of the key vault."
+            }
+        },
+        "keyVaultSecretName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The name of the certificate/secret stored in key vault."
+            }
+        },
+        "EnableMetricAlerts": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Enable alerting and metrics for the application gateway."
+            }
+        },
+        "logStorageAccountId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Storage account to archive logs to (leave blank to disable)"
+            }
+        },
+        "logWorkspaceId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Log analytics workspace to send logs to (leave blank to disable)"
+            }
+        },
+        "logRetention": {
+            "type": "int",
+            "defaultValue": 0,
+            "metadata": {
+                "description": "Number of days to retain the log files for (set to 0 to disable retention policy)"
+            }
+        },
+        "appGatewayTier": {
+            "type": "string",
+            "defaultValue": "Standard_v2",
+            "metadata": {
+                "description": "Application Gateway SKU, defaults to Standard_v2. Change to WAF_v2 to add WAF functionality"
+            }
+        }
+    },
+    "variables": {
+        "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
+        "publicIPAddressName": "[concat(parameters('appGatewayName'), '-ip')]",
+        "userAssignedIdentityName": "[concat(parameters('appGatewayName'), '-uim')]",
+        "keyvaultInUse": "[and(greater(length(parameters('keyVaultName')),0), greater(length(parameters('keyVaultSecretName')),0))]",
+        "actionGroupName": "[concat(parameters('appGatewayName'), '-actgrp')]",
+        "appGatewayMetricsToAlertUpon": [
+            {
+                "MetricName": "UnhealthyHostCount",
+                "Operator": "GreaterThan",
+                "Threshold": "0",
+                "TimeWindow": "PT5M",
+                "Aggregation": "Average"
+            },
+            {
+                "MetricName": "CapacityUnits",
+                "Operator": "GreaterThan",
+                "Threshold": "[string(mul(parameters('capacity'), 5))]",
+                "TimeWindow": "PT5M",
+                "Aggregation": "Average"
+            }
+        ]
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-05-10",
+            "name": "sharedAppGatewayIp",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'public-ip.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "ipAddressName": {
+                        "value": "[variables('publicIPAddressName')]"
+                    },
+                    "ipAddressSku": {
+                        "value": "Standard"
+                    },
+                    "allocationMethod": {
+                        "value": "Static"
+                    },
+                    "publicDnsLabel": {
+                        "value": "[parameters('publicDnsLabel')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "name": "[variables('userAssignedIdentityName')]",
+            "apiVersion": "2018-11-30",
+            "condition": "[variables('keyvaultInUse')]",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "keyvaultAppGatewayAccessPolicy",
+            "type": "Microsoft.Resources/deployments",
+            "condition": "[variables('keyvaultInUse')]",
+            "dependsOn": [
+                "[variables('userAssignedIdentityName')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'KeyVault/keyvault-access-policy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "keyVaultName": {
+                        "value": "[parameters('keyVaultName')]"
+                    },
+                    "servicePrincipalObjectId": {
+                        "value": "[reference(variables('userAssignedIdentityName'),'2018-11-30').principalId]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "sharedAppGateway",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[if(variables('keyvaultInUse'), 'keyvaultAppGatewayAccessPolicy', 'sharedAppGatewayIp')]",
+                "sharedAppGatewayIp"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'app-gateway-v2.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appGatewayName": {
+                        "value": "[parameters('appGatewayName')]"
+                    },
+                    "subnetRef": {
+                        "value": "[parameters('appGatewaySubnetRef')]"
+                    },
+                    "appGatewayTier": {
+                        "value": "[parameters('appGatewayTier')]"
+                    },
+                    "capacity": {
+                        "value": "[parameters('capacity')]"
+                    },
+                    "publicIpAddressId": {
+                        "value": "[reference('sharedAppGatewayIp').outputs.publicIpAddressId.value]"
+                    },
+                    "privateIpAddress": {
+                        "value": "[parameters('privateIPAddress')]"
+                    },
+                    "customProbes": {
+                        "value": "[parameters('customProbes')]"
+                    },
+                    "customErrorPages": {
+                        "value": "[parameters('customErrorPages')]"
+                    },
+                    "backendPools": {
+                        "value": "[parameters('appGatewayPools')]"
+                    },
+                    "backendHttpSettings": {
+                        "value": "[parameters('appGatewayPoolHttpSettings')]"
+                    },
+                    "routingRules": {
+                        "value": "[parameters('appGatewayRouting')]"
+                    },
+                    "rewriteRules": {
+                        "value": "[parameters('appGatewayRewrites')]"
+                    },
+                    "keyVaultName": {
+                        "value": "[parameters('keyVaultName')]"
+                    },
+                    "keyVaultSecretName": {
+                        "value": "[parameters('keyVaultSecretName')]"
+                    },
+                    "userAssignedIdentityName": {
+                        "value": "[variables('userAssignedIdentityName')]"
+                    },
+                    "logStorageAccountId": {
+                        "value": "[parameters('logStorageAccountId')]"
+                    },
+                    "logWorkspaceId": {
+                        "value": "[parameters('logWorkspaceId')]"
+                    },
+                    "logRetention": {
+                        "value": "[parameters('logRetention')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[variables('ActionGroupName')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'), 'Application-Insights/action-groups.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "actionGroupName": {
+                        "value": "[variables('ActionGroupName')]"
+                    },
+                    "enabled": {
+                        "value": "[parameters('EnableMetricAlerts')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[concat(parameters('appGatewayName'), '-metric-', tolower(variables('appGatewayMetricsToAlertUpon')[copyIndex()].MetricName))]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'), 'Application-Insights/metric-alerts.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "enabled": {
+                        "value": "[parameters('EnableMetricAlerts')]"
+                    },
+                    "alertName": {
+                        "value": "[concat(parameters('appGatewayName'), '-metric-', tolower(variables('appGatewayMetricsToAlertUpon')[copyIndex()].MetricName))]"
+                    },
+                    "alertSeverity": {
+                        "value": 3
+                    },
+                    "metricName": {
+                        "value": "[variables('appGatewayMetricsToAlertUpon')[copyIndex()].MetricName]"
+                    },
+                    "operator": {
+                        "value": "[variables('appGatewayMetricsToAlertUpon')[copyIndex()].Operator]"
+                    },
+                    "threshold": {
+                        "value": "[variables('appGatewayMetricsToAlertUpon')[copyIndex()].Threshold]"
+                    },
+                    "aggregation": {
+                        "value": "[variables('appGatewayMetricsToAlertUpon')[copyIndex()].Aggregation]"
+                    },
+                    "windowSize": {
+                        "value": "[variables('appGatewayMetricsToAlertUpon')[copyIndex()].TimeWindow]"
+                    },
+                    "evaluationFrequency": {
+                        "value": "PT1M"
+                    },
+                    "actionGroupName": {
+                        "value": "[variables('ActionGroupName')]"
+                    },
+                    "resourceId": {
+                        "value": "[resourceId('Microsoft.Network/applicationGateways', parameters('appGatewayName'))]"
+                    }
+                }
+            },
+            "copy": {
+                "name": "AppGatewayAlertMetricsCopy",
+                "count": "[length(variables('appGatewayMetricsToAlertUpon'))]"
+            },
+            "dependsOn": [
+                "[variables('ActionGroupName')]",
+                "sharedAppGateway"
+            ]
+        }
+    ],
+    "outputs": {
+    }
+}

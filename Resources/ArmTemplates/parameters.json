@@ -1,0 +1,107 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appGatewayName": {
+            "value": "__aksAppGatewayName__"
+        },
+        "appGatewaySubnetRef": {
+            "value": "__aksAppGatewaySubnetResourceId__"
+        },
+        "capacity": {
+            "value": __aksAppGatewayCapacity__
+        },
+        "appGatewayPools": {
+            "value": [ {
+                "name": "defaultBackend",
+                "fqdn": "__aksBackend__"
+            } ]
+        },
+        "appGatewayPoolHttpSettings": {
+            "value": [ {
+                "name": "httpSettings",
+                "port": 7474,
+                "protocol": "Http",
+                "hostnameFromBackendAddress": true
+              }, {
+                "name": "httpsSettings",
+                "port": 7473,
+                "protocol": "Https",
+                "hostnameFromBackendAddress": true
+              }, {
+                "name": "boltSettings",
+                "port": 7687,
+                "protocol": "Https",
+                "hostnameFromBackendAddress": true
+            } ]
+        },
+        "privateIPAddress": {
+            "value": "__aksagPrivateIPAddress__"
+        },
+        "publicDnsLabel": {
+            "value": "__aksagPublicDnsLabel__"
+        },
+        "keyVaultName": {
+            "value": "__keyVaultName__"
+        },
+        "keyVaultSecretName": {
+            "value": "__keyVaultSecretName__"
+        },
+        "EnableMetricAlerts": {
+            "value": __EnableMetricAlerts__
+        },
+        "logStorageAccountId": {
+            "value": "__logStorageAccountId__"
+        },
+        "logWorkspaceId": {
+            "value": "__logWorkspaceId__"
+        },
+        "logRetention": {
+            "value": __logRetention__
+        },
+        "appGatewayRewrites": {
+            "value": [
+                {
+                    "name": "Location_azurewebsites.net",
+                    "ruleSequence": 10,
+                    "conditions": [
+                        {
+                            "variable": "http_resp_Location",
+                            "pattern": "(https?):\\/\\/[^\\/]+azurewebsites\\.net(.*)$",
+                            "ignoreCase": true,
+                            "negate": false
+                        }
+                    ],
+                    "actionSet": {
+                        "responseHeaderConfigurations": [
+                            {
+                                "headerName": "Location",
+                                "headerValue": "{http_resp_Location_1}://__aksAppGatewayFqdn__{http_resp_Location_2}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "LocationRedirect_azurewebsites.net",
+                    "ruleSequence": 20,
+                    "conditions": [
+                        {
+                            "variable": "http_resp_Location",
+                            "pattern": "(.*)redirect_uri=(https?)%3a%2f%2f.*azurewebsites\\.net(.*)$",
+                            "ignoreCase": true,
+                            "negate": false
+                        }
+                    ],
+                    "actionSet": {
+                        "responseHeaderConfigurations": [
+                            {
+                                "headerName": "Location",
+                                "headerValue": "{http_resp_Location_1}redirect_uri=https%3a%2f%2f__aksAppGatewayFqdn__{http_resp_Location_3}"
+                            }
+                        ]
+                    }
+                },
+            ]
+        }
+    }
+}
