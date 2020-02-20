@@ -36,10 +36,10 @@
             } ]
         },
         "privateIPAddress": {
-            "value": "__privateIPAddress__"
+            "value": "__aksagPrivateIPAddress__"
         },
         "publicDnsLabel": {
-            "value": "__publicDnsLabel__"
+            "value": "__aksagPublicDnsLabel__"
         },
         "keyVaultName": {
             "value": "__keyVaultName__"
@@ -58,6 +58,50 @@
         },
         "logRetention": {
             "value": __logRetention__
+        },
+        "appGatewayRewrites": {
+            "value": [
+                {
+                    "name": "Location_azurewebsites.net",
+                    "ruleSequence": 10,
+                    "conditions": [
+                        {
+                            "variable": "http_resp_Location",
+                            "pattern": "(https?):\\/\\/[^\\/]+azurewebsites\\.net(.*)$",
+                            "ignoreCase": true,
+                            "negate": false
+                        }
+                    ],
+                    "actionSet": {
+                        "responseHeaderConfigurations": [
+                            {
+                                "headerName": "Location",
+                                "headerValue": "{http_resp_Location_1}://__aksAppGatewayFqdn__{http_resp_Location_2}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "LocationRedirect_azurewebsites.net",
+                    "ruleSequence": 20,
+                    "conditions": [
+                        {
+                            "variable": "http_resp_Location",
+                            "pattern": "(.*)redirect_uri=(https?)%3a%2f%2f.*azurewebsites\\.net(.*)$",
+                            "ignoreCase": true,
+                            "negate": false
+                        }
+                    ],
+                    "actionSet": {
+                        "responseHeaderConfigurations": [
+                            {
+                                "headerName": "Location",
+                                "headerValue": "{http_resp_Location_1}redirect_uri=https%3a%2f%2f__aksAppGatewayFqdn__{http_resp_Location_3}"
+                            }
+                        ]
+                    }
+                },
+            ]
         }
     }
 }

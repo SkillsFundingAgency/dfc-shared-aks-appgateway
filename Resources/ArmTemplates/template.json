@@ -35,7 +35,6 @@
         },
         "appGatewayRewrites": {
             "type": "array",
-            "defaultValue": [],
             "metadata": {
                 "description": "Array of objects describing the rewrite rules"
             }
