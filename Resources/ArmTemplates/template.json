@@ -28,7 +28,6 @@
         },
         "appGatewayRouting": {
             "type": "array",
-            "defaultValue": [],
             "metadata": {
                 "description": "Array of objects describing the rules for routing traffic"
             }

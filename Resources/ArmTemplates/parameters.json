@@ -59,6 +59,14 @@
         "logRetention": {
             "value": __logRetention__
         },
+        "appGatewayRouting": {
+            "value": [ {
+                "name": "dummyrule",
+                "backendPool": "defaultBackend",
+                "backendHttp": "boltSettings",
+                "paths": [ "/dummy/*" ]
+            } ]
+        },
         "appGatewayRewrites": {
             "value": [
                 {
