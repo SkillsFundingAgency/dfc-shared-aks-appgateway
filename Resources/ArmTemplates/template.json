@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "actionGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the action group to send alerts to, this should be the same as the action group used by other App Gateways in this environment"
+            }
+        },
         "appGatewayName": {
             "type": "string",
             "metadata": {
@@ -131,7 +137,6 @@
         "publicIPAddressName": "[concat(parameters('appGatewayName'), '-ip')]",
         "userAssignedIdentityName": "[concat(parameters('appGatewayName'), '-uim')]",
         "keyvaultInUse": "[and(greater(length(parameters('keyVaultName')),0), greater(length(parameters('keyVaultSecretName')),0))]",
-        "actionGroupName": "[concat(parameters('appGatewayName'), '-actgrp')]",
         "appGatewayMetricsToAlertUpon": [
             {
                 "MetricName": "UnhealthyHostCount",
@@ -280,7 +285,7 @@
             }
         },
         {
-            "name": "[variables('ActionGroupName')]",
+            "name": "[parameters('actionGroupName')]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2017-05-10",
             "properties": {
@@ -291,7 +296,7 @@
                 },
                 "parameters": {
                     "actionGroupName": {
-                        "value": "[variables('ActionGroupName')]"
+                        "value": "[parameters('actionGroupName')]"
                     },
                     "enabled": {
                         "value": "[parameters('EnableMetricAlerts')]"
@@ -338,7 +343,7 @@
                         "value": "PT1M"
                     },
                     "actionGroupName": {
-                        "value": "[variables('ActionGroupName')]"
+                        "value": "[parameters('actionGroupName')]"
                     },
                     "resourceId": {
                         "value": "[resourceId('Microsoft.Network/applicationGateways', parameters('appGatewayName'))]"
@@ -350,7 +355,7 @@
                 "count": "[length(variables('appGatewayMetricsToAlertUpon'))]"
             },
             "dependsOn": [
-                "[variables('ActionGroupName')]",
+                "[parameters('actionGroupName')]",
                 "sharedAppGateway"
             ]
         }

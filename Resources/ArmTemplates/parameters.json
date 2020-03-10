@@ -2,6 +2,9 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "actionGroupName": {
+            "value": "__AppGatewayActionGroupName__"
+        },
         "appGatewayName": {
             "value": "__aksAppGatewayName__"
         },
