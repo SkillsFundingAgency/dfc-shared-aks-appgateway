@@ -19,10 +19,6 @@
                 {
                     "name": "defaultBackend",
                     "fqdn": "__aksBackend__"
-                },
-                {
-                    "name": "placeholderBackend",
-                    "fqdn": "__aksBackend__"
                 }
             ]
         },
