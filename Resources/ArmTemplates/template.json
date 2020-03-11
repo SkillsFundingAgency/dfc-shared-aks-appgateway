@@ -235,9 +235,6 @@
                     "publicIpAddressId": {
                         "value": "[reference('aksAppGatewayIp').outputs.publicIpAddressId.value]"
                     },
-                    "privateIpAddress": {
-                        "value": "[parameters('privateIPAddress')]"
-                    },
                     "customProbes": {
                         "value": "[parameters('customProbes')]"
                     },
