@@ -56,9 +56,6 @@
                 }
             ]
         },
-        "privateIPAddress": {
-            "value": "__aksagPrivateIPAddress__"
-        },
         "publicDnsLabel": {
             "value": "__aksagPublicDnsLabel__"
         },

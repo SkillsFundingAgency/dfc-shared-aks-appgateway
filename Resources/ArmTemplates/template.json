@@ -75,13 +75,6 @@
                 "description": "Set DNS label on public IP address for application gateway"
             }
         },
-        "privateIPAddress": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "Private IP address for application gateway"
-            }
-        },
         "keyVaultName": {
             "type": "string",
             "defaultValue": "",
