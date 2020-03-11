@@ -157,7 +157,7 @@
     "resources": [
         {
             "apiVersion": "2017-05-10",
-            "name": "sharedAppGatewayIp",
+            "name": "aksAppGatewayIp",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -214,11 +214,11 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "sharedAppGateway",
+            "name": "aksAppGateway",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
-                "[if(variables('keyvaultInUse'), 'keyvaultAppGatewayAccessPolicy', 'sharedAppGatewayIp')]",
-                "sharedAppGatewayIp"
+                "[if(variables('keyvaultInUse'), 'keyvaultAppGatewayAccessPolicy', 'aksAppGatewayIp')]",
+                "aksAppGatewayIp"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -240,7 +240,7 @@
                         "value": "[parameters('capacity')]"
                     },
                     "publicIpAddressId": {
-                        "value": "[reference('sharedAppGatewayIp').outputs.publicIpAddressId.value]"
+                        "value": "[reference('aksAppGatewayIp').outputs.publicIpAddressId.value]"
                     },
                     "privateIpAddress": {
                         "value": "[parameters('privateIPAddress')]"
@@ -356,7 +356,7 @@
             },
             "dependsOn": [
                 "[parameters('actionGroupName')]",
-                "sharedAppGateway"
+                "aksAppGateway"
             ]
         }
     ],
