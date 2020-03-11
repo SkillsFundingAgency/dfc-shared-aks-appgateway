@@ -53,6 +53,14 @@
         "appGatewayRouting": {
             "value": [
                 {
+                    "name": "defaultBackendHttp",
+                    "backendPool": "defaultBackend",
+                    "backendHttp": "httpSettings",
+                    "paths": [
+                        "/browser/*"
+                    ]
+                },
+                {
                     "name": "defaultBackendHttps",
                     "backendPool": "defaultBackend",
                     "backendHttp": "httpsSettings",
