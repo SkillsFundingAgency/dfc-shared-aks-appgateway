@@ -33,20 +33,17 @@
                 {
                     "name": "httpSettings",
                     "port": 7474,
-                    "protocol": "Http",
-                    "hostnameFromBackendAddress": true
+                    "protocol": "Http"
                 },
                 {
                     "name": "httpsSettings",
                     "port": 7473,
-                    "protocol": "Https",
-                    "hostnameFromBackendAddress": true
+                    "protocol": "Https"
                 },
                 {
                     "name": "boltSettings",
                     "port": 7687,
-                    "protocol": "Https",
-                    "hostnameFromBackendAddress": true
+                    "protocol": "Https"
                 }
             ]
         },
