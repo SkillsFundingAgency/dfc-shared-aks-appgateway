@@ -44,6 +44,18 @@
                 }
             ]
         },
+        "appGatewayRouting": {
+            "value": [
+                {
+                    "name": "defaultBackendHttps",
+                    "backendPool": "defaultBackend",
+                    "backendHttp": "httpsSettings",
+                    "paths": [
+                        "/browser/*"
+                    ]
+                }
+            ]
+        },
         "privateIPAddress": {
             "value": "__aksagPrivateIPAddress__"
         },
