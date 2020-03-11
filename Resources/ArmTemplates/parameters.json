@@ -5,6 +5,9 @@
         "actionGroupName": {
             "value": "__AppGatewayActionGroupName__"
         },
+        "appGatewayListenerHttpsPort": {
+            "value": 7473
+        },
         "appGatewayName": {
             "value": "__aksAppGatewayName__"
         },

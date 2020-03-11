@@ -8,6 +8,9 @@
                 "description": "The name of the action group to send alerts to, this should be the same as the action group used by other App Gateways in this environment"
             }
         },
+        "appGatewayListenerHttpsPort": {
+            "type": "int"
+        },
         "appGatewayName": {
             "type": "string",
             "metadata": {
@@ -234,6 +237,9 @@
                     },
                     "publicIpAddressId": {
                         "value": "[reference('aksAppGatewayIp').outputs.publicIpAddressId.value]"
+                    },
+                    "httpsFrontendPort": {
+                        "value": "[parameters('appGatewayListenerHttpsPort')]"
                     },
                     "customProbes": {
                         "value": "[parameters('customProbes')]"
