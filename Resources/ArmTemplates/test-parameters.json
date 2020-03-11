@@ -5,6 +5,9 @@
         "actionGroupName": {
             "value": "dfc-foo-shared-ag-actgrp"
         },
+        "appGatewayListenerHttpsPort": {
+            "value": 7473
+        },
         "appGatewayName": {
             "value": "dfc-foo-bar-ag"
         },
